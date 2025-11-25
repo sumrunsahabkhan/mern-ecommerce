@@ -1,7 +1,11 @@
+require("dotenv").config(); // Load .env first
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+
+// Import routes
 const authRouter = require("./routes/auth/auth-routes");
 const adminProductsRouter = require("./routes/admin/products-routes");
 const adminOrderRouter = require("./routes/admin/order-routes");
@@ -15,17 +19,16 @@ const shopReviewRouter = require("./routes/shop/review-routes");
 
 const commonFeatureRouter = require("./routes/common/feature-routes");
 
-//create a database connection -> u can also
-//create a separate file for this and then import/use that file here
-
+// Connect to MongoDB using MONGO_URL from .env
 mongoose
-  .connect("db_url")
+  .connect(process.env.MONGO_URL)
   .then(() => console.log("MongoDB connected"))
   .catch((error) => console.log(error));
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// CORS Settings
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -43,6 +46,8 @@ app.use(
 
 app.use(cookieParser());
 app.use(express.json());
+
+// API Routes
 app.use("/api/auth", authRouter);
 app.use("/api/admin/products", adminProductsRouter);
 app.use("/api/admin/orders", adminOrderRouter);
@@ -56,4 +61,5 @@ app.use("/api/shop/review", shopReviewRouter);
 
 app.use("/api/common/feature", commonFeatureRouter);
 
+// Server Listen
 app.listen(PORT, () => console.log(`Server is now running on port ${PORT}`));
