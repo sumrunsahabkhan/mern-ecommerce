@@ -6,6 +6,9 @@ import { Button } from "../ui/button";
 import axios from "axios";
 import { Skeleton } from "../ui/skeleton";
 
+// ✅ ENV BASE URL (VITE)
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
 function ProductImageUpload({
   imageFile,
   setImageFile,
@@ -18,13 +21,8 @@ function ProductImageUpload({
 }) {
   const inputRef = useRef(null);
 
-  console.log(isEditMode, "isEditMode");
-
   function handleImageFileChange(event) {
-    console.log(event.target.files, "event.target.files");
     const selectedFile = event.target.files?.[0];
-    console.log(selectedFile);
-
     if (selectedFile) setImageFile(selectedFile);
   }
 
@@ -45,18 +43,24 @@ function ProductImageUpload({
     }
   }
 
+  // ✅ ENV-BASED IMAGE UPLOAD (NO HARDCODING)
   async function uploadImageToCloudinary() {
-    setImageLoadingState(true);
-    const data = new FormData();
-    data.append("my_file", imageFile);
-    const response = await axios.post(
-      "http://localhost:5000/api/admin/products/upload-image",
-      data
-    );
-    console.log(response, "response");
+    try {
+      setImageLoadingState(true);
+      const data = new FormData();
+      data.append("my_file", imageFile);
 
-    if (response?.data?.success) {
-      setUploadedImageUrl(response.data.result.url);
+      const response = await axios.post(
+        `${BASE_URL}/api/admin/products/upload-image`,
+        data
+      );
+
+      if (response?.data?.success) {
+        setUploadedImageUrl(response.data.result.url);
+      }
+    } catch (error) {
+      console.error("Image Upload Failed:", error);
+    } finally {
       setImageLoadingState(false);
     }
   }
@@ -67,9 +71,10 @@ function ProductImageUpload({
 
   return (
     <div
-      className={`w-full  mt-4 ${isCustomStyling ? "" : "max-w-md mx-auto"}`}
+      className={`w-full mt-4 ${isCustomStyling ? "" : "max-w-md mx-auto"}`}
     >
       <Label className="text-lg font-semibold mb-2 block">Upload Image</Label>
+
       <div
         onDragOver={handleDragOver}
         onDrop={handleDrop}
@@ -85,6 +90,7 @@ function ProductImageUpload({
           onChange={handleImageFileChange}
           disabled={isEditMode}
         />
+
         {!imageFile ? (
           <Label
             htmlFor="image-upload"
@@ -102,7 +108,9 @@ function ProductImageUpload({
             <div className="flex items-center">
               <FileIcon className="w-8 text-primary mr-2 h-8" />
             </div>
+
             <p className="text-sm font-medium">{imageFile.name}</p>
+
             <Button
               variant="ghost"
               size="icon"

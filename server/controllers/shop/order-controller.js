@@ -20,14 +20,17 @@ const createOrder = async (req, res) => {
       cartId,
     } = req.body;
 
+    // ✅ FRONTEND URL FROM ENV (NO HARDCODING)
+    const FRONTEND_URL = process.env.CLIENT_URL;
+
     const create_payment_json = {
       intent: "sale",
       payer: {
         payment_method: "paypal",
       },
       redirect_urls: {
-        return_url: "http://localhost:5173/shop/paypal-return",
-        cancel_url: "http://localhost:5173/shop/paypal-cancel",
+        return_url: `${FRONTEND_URL}/shop/paypal-return`,
+        cancel_url: `${FRONTEND_URL}/shop/paypal-cancel`,
       },
       transactions: [
         {
@@ -52,7 +55,6 @@ const createOrder = async (req, res) => {
     paypal.payment.create(create_payment_json, async (error, paymentInfo) => {
       if (error) {
         console.log(error);
-
         return res.status(500).json({
           success: false,
           message: "Error while creating paypal payment",
@@ -119,12 +121,11 @@ const capturePayment = async (req, res) => {
       if (!product) {
         return res.status(404).json({
           success: false,
-          message: `Not enough stock for this product ${product.title}`,
+          message: `Not enough stock for this product ${item.productId}`,
         });
       }
 
       product.totalStock -= item.quantity;
-
       await product.save();
     }
 

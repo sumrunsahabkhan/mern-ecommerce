@@ -1,38 +1,45 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 
+// ✅ ENV BASE URL (VITE)
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
 const initialState = {
   orderList: [],
   orderDetails: null,
+  isLoading: false,
 };
 
+// ✅ GET ALL ORDERS (ADMIN)
 export const getAllOrdersForAdmin = createAsyncThunk(
   "/order/getAllOrdersForAdmin",
   async () => {
     const response = await axios.get(
-      `http://localhost:5000/api/admin/orders/get`
+      `${BASE_URL}/api/admin/orders/get`
     );
 
     return response.data;
   }
 );
 
+// ✅ GET ORDER DETAILS (ADMIN)
 export const getOrderDetailsForAdmin = createAsyncThunk(
   "/order/getOrderDetailsForAdmin",
   async (id) => {
     const response = await axios.get(
-      `http://localhost:5000/api/admin/orders/details/${id}`
+      `${BASE_URL}/api/admin/orders/details/${id}`
     );
 
     return response.data;
   }
 );
 
+// ✅ UPDATE ORDER STATUS (ADMIN)
 export const updateOrderStatus = createAsyncThunk(
   "/order/updateOrderStatus",
   async ({ id, orderStatus }) => {
     const response = await axios.put(
-      `http://localhost:5000/api/admin/orders/update/${id}`,
+      `${BASE_URL}/api/admin/orders/update/${id}`,
       {
         orderStatus,
       }
@@ -47,8 +54,6 @@ const adminOrderSlice = createSlice({
   initialState,
   reducers: {
     resetOrderDetails: (state) => {
-      console.log("resetOrderDetails");
-
       state.orderDetails = null;
     },
   },
