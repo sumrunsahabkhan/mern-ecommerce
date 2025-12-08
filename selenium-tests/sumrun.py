@@ -13,20 +13,34 @@ options.add_argument("--disable-gpu")
 options.add_argument("--window-size=1920,1080")
 options.add_argument("--no-sandbox")
 
-driver = webdriver.Chrome( options=options)
+# Initialize WebDriver
+# Note: For execution within a Docker container using a pre-installed Chrome (as in your Dockerfile), 
+# you might need to adjust or remove ChromeDriverManager logic if it interferes.
+# Using just webdriver.Chrome(options=options) should work since Chrome is installed globally in the image.
+driver = webdriver.Chrome(options=options)
 wait = WebDriverWait(driver, 15)
 
 # Create screenshots folder
-os.makedirs("screenshots", exist_ok=True)
+#os.makedirs("screenshots", exist_ok=True)
+
+# Define Base URL from environment variable
+BASE_URL = os.environ.get("BASE_URL")
+if not BASE_URL:
+    # Fallback for running locally outside of the Docker/CI environment
+    BASE_URL = "http://localhost:5173" 
+    print("Warning: BASE_URL environment variable not set. Falling back to localhost.")
+
+LOGIN_URL = f"{BASE_URL}/auth/login"
+print(f"Base URL set to: {BASE_URL}")
 
 # ---------------- OPEN SITE ---------------- #
-driver.get("http://localhost:5173/auth/login")
+print(f"Attempting to open login page: {LOGIN_URL}")
+driver.get(LOGIN_URL)
 time.sleep(1)
-driver.save_screenshot("screenshots/01_open_site.png")
+#driver.save_screenshot("screenshots/01_open_site.png")
 
 # ---------------- LOGIN ---------------- #
-
-
+print("Starting login process...")
 email_field = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input[type="email"]')))
 email_field.send_keys("test123@gmail.com")
 password_field = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input[type="password"]')))
@@ -36,12 +50,13 @@ signin_button = wait.until(EC.element_to_be_clickable((By.XPATH, '/html/body/div
 driver.execute_script("arguments[0].click();", signin_button)
 print("Login completed!")
 time.sleep(3)  # wait for home page to load
-driver.save_screenshot("screenshots/03_after_login.png")
+#driver.save_screenshot("screenshots/03_after_login.png")
 
 # ---------------- CLICK MENU ITEMS ---------------- #
 menu_items = ["Home","Products","Men","Women","Kids","Footwear","Accessories","Search"]
 
 for idx, item in enumerate(menu_items, start=1):
+    # Adjusted XPath slightly for robustness, keeping the original from your script for now:
     xpath = f"/html/body/div/div[1]/div/header/div/div[1]/nav/label[{idx}]"
     
     menu_element = wait.until(EC.presence_of_element_located((By.XPATH, xpath)))
@@ -51,7 +66,7 @@ for idx, item in enumerate(menu_items, start=1):
     
     print(f"Clicked menu item: {item}")
     
-    driver.save_screenshot(f"screenshots/0{idx}_clicked_{item}.png")
+    #driver.save_screenshot(f"screenshots/0{idx}clicked{item}.png")
     time.sleep(1)
 
 # ---------------- CLICK HOME AGAIN ---------------- #
@@ -67,7 +82,7 @@ driver.execute_script("arguments[0].click();", home_menu)
 
 print("Clicked HOME again")
 
-driver.save_screenshot("screenshots/08_home_again.png")
+#driver.save_screenshot("screenshots/08_home_again.png")
 time.sleep(2)
 
 # ---------------- CLICK PRODUCT IMAGE ---------------- #
@@ -79,7 +94,7 @@ image_element = wait.until(
 driver.execute_script("arguments[0].scrollIntoView(true);", image_element)
 driver.execute_script("arguments[0].click();", image_element)
 print("Clicked product image")
-driver.save_screenshot("screenshots/09_product_image.png")
+#driver.save_screenshot("screenshots/09_product_image.png")
 time.sleep(2)
 
 
@@ -89,7 +104,7 @@ add_to_cart = wait.until(
 driver.execute_script("arguments[0].scrollIntoView(true);", add_to_cart)
 driver.execute_script("arguments[0].click();", add_to_cart)
 print("clicked add to cart")
-driver.save_screenshot("screenshots/10_selected_size.png")
+#driver.save_screenshot("screenshots/10_selected_size.png")
 time.sleep(1)
 
 # ---------------- CLICK CROSS BUTTON ---------------- #
@@ -102,7 +117,7 @@ time.sleep(0.3)
 driver.execute_script("arguments[0].click();", cross_button)
 
 print("Clicked cross button")
-driver.save_screenshot("screenshots/11_added_to_cart.png")
+#driver.save_screenshot("screenshots/11_added_to_cart.png")
 time.sleep(1)
 
 # ---------------- CLICK CART ICON ---------------- #
@@ -112,7 +127,7 @@ cart_button = wait.until(
 
 driver.execute_script("arguments[0].click();", cart_button)
 print("Opened cart")
-driver.save_screenshot("screenshots/12_open_cart.png")
+#driver.save_screenshot("screenshots/12_open_cart.png")
 time.sleep(1)
 
 
@@ -121,7 +136,7 @@ checkout_button = wait.until(EC.presence_of_element_located((By.XPATH, "/html/bo
 driver.execute_script("arguments[0].scrollIntoView(true);", checkout_button)
 driver.execute_script("arguments[0].click();", checkout_button)
 print("Proceeded to checkout")
-driver.save_screenshot("screenshots/13_checkout_page.png")
+#driver.save_screenshot("screenshots/13_checkout_page.png")
 time.sleep(2)
 
 # ---------------- FILL CHECKOUT FORM ---------------- #
@@ -132,6 +147,7 @@ checkout_data = {
     "phone": "1234567890",
     "notes": "Please deliver between 9 AM to 5 PM"
 }
+print("Filling checkout form...")
 
 for field_name, value in checkout_data.items():
     input_element = wait.until(
@@ -144,7 +160,7 @@ for field_name, value in checkout_data.items():
     input_element.clear()
     input_element.send_keys(value)
 
-driver.save_screenshot("screenshots/14_filled_checkout.png")
+#driver.save_screenshot("screenshots/14_filled_checkout.png")
 time.sleep(1)
 
 
@@ -153,9 +169,7 @@ add_address = wait.until(EC.presence_of_element_located((By.XPATH, "/html/body/d
 driver.execute_script("arguments[0].scrollIntoView(true);", add_address)
 driver.execute_script("arguments[0].click();", add_address)
 print("Address Added Successfully!")
-driver.save_screenshot("screenshots/15_order_placed.png")
+#driver.save_screenshot("screenshots/15_order_placed.png")
 time.sleep(2)
 
 driver.quit()
-
-
