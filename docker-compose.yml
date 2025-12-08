@@ -1,0 +1,37 @@
+version: "3.9"
+
+services:
+
+  backend-ci:
+    image: node:20
+    container_name: backend-ci
+    working_dir: /app
+    volumes:
+      - ./server:/app
+    command: sh -c "npm install && npm start"
+    ports:
+      - "5001:5000"
+    environment:
+      - PORT=5000
+    networks:
+      - ci-network
+    env_file:
+      - ./server/.env  
+  user-frontend-ci:
+    image: node:20
+    container_name: user-frontend-ci
+    working_dir: /app
+    volumes:
+      - ./client:/app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "3005:5173"
+    networks:
+      - ci-network
+    depends_on:
+      - backend-ci  
+      
+networks:
+  ci-network:
+    name: ci-network     
+    driver: bridge
