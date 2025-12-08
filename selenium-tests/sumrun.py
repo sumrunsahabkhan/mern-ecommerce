@@ -180,4 +180,4 @@ except Exception as e:
     raise e
 
 finally:
-    driver.quit()
+    driver.quit()
