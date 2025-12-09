@@ -21,7 +21,7 @@ wait = WebDriverWait(driver, 15)
 # Define Base URL from environment variable
 BASE_URL = os.environ.get("BASE_URL")
 if not BASE_URL:
-    BASE_URL = "http://localhost:5173" 
+    BASE_URL = "http://3.80.204.243:3005" 
     print("Warning: BASE_URL environment variable not set. Falling back to localhost.")
 
 LOGIN_URL = f"{BASE_URL}/auth/login"
